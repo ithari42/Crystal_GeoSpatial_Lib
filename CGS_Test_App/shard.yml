@@ -1,0 +1,13 @@
+name: CGS_Test_App
+version: 0.1.0
+
+authors:
+  - your-name-here <your-email-here>
+
+targets:
+  CGS_Test_App:
+    main: src/CGS_Test_App.cr
+
+crystal: 0.31.1
+
+license: MIT
