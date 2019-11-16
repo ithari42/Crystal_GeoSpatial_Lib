@@ -1,5 +1,5 @@
 # TODO: Write documentation for `CGSTestApp`
-require "../src/class_test"
+require "../src/geo"
 
 module CGSTestApp
   VERSION = "0.1.0"
