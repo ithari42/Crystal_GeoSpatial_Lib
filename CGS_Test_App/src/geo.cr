@@ -86,7 +86,3 @@ class Dog
     @owener
   end
 end
-
-peter=Person.new "Peter"
-dog1=Dog.new "dog1",peter
-puts dog1.owener.name
