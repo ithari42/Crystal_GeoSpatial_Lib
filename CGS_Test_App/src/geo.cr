@@ -11,24 +11,39 @@ class GeoPoint
   end
 end
 class GeoPolyline
-  def initialize(@points)#Need a tuple of GeoPoint
-  end
+	def initialize(@points)#Need a tuple of GeoPoint
+	end
 
-  def toPolygon #return a polygon formed by connecting head and rear Geopoint
-  end
+	def toPolygon #return a polygon formed by connecting head and rear Geopoint
+		return GeoPolygon.new(@points)
+	end
+  
+	def allNorth # returns true if all of the points are in the northeren hemisphere, false otherwise
+	end
+	
+	def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
+	end
+	
 end
 class GeoPolygon
-  def initialize(@points)
-  end
+	def initialize(@points)
+	end
 
-  def contains
-  end
+	def contains
+	end
 
-  def toPolyline
-  end
+	def toPolyline
+		return GeoLine.new(@points)
+	end
 
-  def isConvex
-  end
+	def isConvex
+	end
+	
+	def allNorth # returns true if all of the points are in the northeren hemisphere, false otherwise
+	end
+
+	def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
+	end
 end
 class GeoUtilities2D
   def distanceEuclidean(p1 : GeoPoint, p2 : Geopoint)
@@ -55,34 +70,5 @@ class GeoUtilities2D
 
   def intersects(g1 : GeoPolygon, g2 : GeoPolygon)
     
-  end
-end
-
-#below are simple writing examples, they're not to used anywhere
-#for us to get familiar with crystal
-class Person
-    def initialize(@name : String)
-      @age = 0
-    end
-  
-    def age
-      @age
-    end
-
-    def name
-      @name
-    end
-  end
-
-class Dog
-  def initialize(@name : String,@owener : Person)
-  end
-
-  def name
-    @name
-  end
-
-  def owener
-    @owener
   end
 end

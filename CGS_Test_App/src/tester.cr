@@ -32,32 +32,3 @@ class Tester
   def display
   end
 end
-
-#below are simple writing examples, they're not to used anywhere
-#for us to get familiar with crystal
-class Person
-    def initialize(@name : String)
-      @age = 0
-    end
-  
-    def age
-      @age
-    end
-
-    def name
-      @name
-    end
-  end
-
-class Dog
-  def initialize(@name : String,@owener : Person)
-  end
-
-  def name
-    @name
-  end
-
-  def owener
-    @owener
-  end
-end
