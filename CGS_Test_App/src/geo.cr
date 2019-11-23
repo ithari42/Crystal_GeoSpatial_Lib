@@ -33,7 +33,7 @@ class GeoPolyline
 		@array_of_geo
 	end
 
-	def toPolygon #return a polygon formed by connecting head and rear Geopoint
+	def toPolygon #return a polygon formed by connecting head and rear GeoPoint
 		return GeoPolygon.new(@points)
 	end
   
@@ -84,14 +84,24 @@ class GeoPolygon
 	def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
 	end
 end
+
 class GeoUtilities2D
-  def distanceEuclidean(p1 : GeoPoint, p2 : Geopoint)
-    dis=-1.0
+	#sin, cos in Math use rads
+	extend Math
+
+	def initialize
+		@R_Earth=6371.0 #currently use km as measure unit in our system. if our alg is precise enough after test, we can use meter
+	end
+
+  def distanceEuclidean(p1 : GeoPoint, p2 : GeoPoint)
+	ca=get_ca(p1,p2)
+	dis=ca*@R_Earth
     return dis
   end
 
-  def distanceGC(p1 : GeoPoint, p2 : Geopoint)
-    dis=-1.0
+  def distanceGC(p1 : GeoPoint, p2 : GeoPoint)
+	dis=get_ca(p1,p2)/360
+	dis*=@R_Earth
     return dis
   end
 
@@ -127,6 +137,7 @@ class GeoUtilities2D
 	end
 	return (v1[0]*v2[1]-v1[2]*v2[1])
   end
+
 #return [[lat1,lon1],[lat2,lon2]]
 #ith subline (i,i+1), i starts with 0
 #i must be i<size-1
@@ -138,8 +149,38 @@ class GeoUtilities2D
 	return [[d[i].lat,d[i].lon],[d[i+1].lat,d[i+1].lon]]
   end
 
-  def on_subline(p : Geopoint, s)
+  #return central angle in degree
+  def get_ca(p1 : GeoPoint, p2 : GeoPoint)
+	pi=3.14159265358979323846
+	p1_2d=p1.coordinate2d
+	p2_2d=p2.coordinate2d
+
+	phi1=p1_2d[0]*pi/180
+	lam1=p1_2d[1]*pi/180
+	phi2=p2_2d[0]*pi/180
+	lam2=p2_2d[1]*pi/180
+
+	dphi=phi1-phi2
+	dlam=lam1-lam2
 	
+	dlam_sin_2=GeoUtilities2D.sin(dlam/2)
+	
+	ca=GeoUtilities2D.sin(dphi/2)*GeoUtilities2D.sin(dphi/2)
+
+	ca+=GeoUtilities2D.cos(phi1)*GeoUtilities2D.cos(phi2)*dlam_sin_2*dlam_sin_2
+	
+	ca=GeoUtilities2D.sqrt(ca)
+	
+	ca=GeoUtilities2D.asin(ca)*180/pi
+	
+	ca*=2
+
+	return ca
+
+  end
+
+  def on_subline(p : GeoPoint, s)
+	point=p.coordinate2d
   end
 
   def enum_polygon(l : GeoPolyline) # return a tuple containing each vector on a polygon
@@ -149,5 +190,8 @@ end
 
 "geo.cr test"
 p1=GeoPoint.new(38.9, 77.0, 1.0) # 73.1 N, 77.0 S, 1.0m 
-p2=GeoPoint.new(38.9, 78.0, 1.0)
+p2=GeoPoint.new(8.9, 77.0, 1.0)
 l1=GeoPolyline.new([p1,p2])
+util=GeoUtilities2D.new
+puts util.distanceGC(p1,p2)
+
