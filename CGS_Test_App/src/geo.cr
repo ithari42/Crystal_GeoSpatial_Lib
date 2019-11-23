@@ -186,6 +186,18 @@ class GeoUtilities2D
   def enum_polygon(l : GeoPolyline) # return a tuple containing each vector on a polygon
 	
   end
+
+  def rotate_ll_to_xyz(p : GeoPoint)
+	data=p.coordinate2d
+	phi=data[0]
+	lam=data[1]
+	r=@R_Earth
+	x=r*GeoUtilities2D.sin(phi)*GeoUtilities2D.cos(lam)
+	y=r*eoUtilities2D.sin(phi)*GeoUtilities2D.sin(lam)
+	z=r*GeoUtilities2D.cos(phi)
+
+	return [x,y,z]
+  end
 end
 
 "geo.cr test"
