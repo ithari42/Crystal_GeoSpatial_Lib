@@ -1,4 +1,5 @@
 require "../src/geo"
+require "../src/kmlparser"
 
 class Tester
   def initialize
@@ -22,6 +23,8 @@ class Tester
       puts ["Crystal_GIS_Library Auto Test completed : fail", 3]
       return 3
     end
+
+    gg_intersects
 
     puts ["Crystal_GIS_Library Auto Test completed : success"]
     return 0
@@ -80,8 +83,43 @@ class Tester
     return false
   end
 
+  def gg_intersects
+    t=read()
+    puts typeof(t)
+    util=GeoUtilities2D.new
+    t=util.intersects(t[0],t[1])
+    puts t
+  end
   #read Xml to get a list of points
-  def read
+  def read()
+    arr=[] of GeoPolygon
+    redPG=parseKML("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/RedPolygon.kml")
+    temp = redPG[2]
+
+    case temp
+    when GeoPolygon
+      #polygon code
+      #redPG=GeoPolygon.new(redPG)
+      #redpolygon = Geopolygon.new(redPG[2].@array_of_geo.clone)
+      #puts typeof(temp)
+      arr<<temp
+    end
+
+  
+
+    #puts redPG
+
+    purplePG=parseKML("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/PurplePolygon.kml")
+    temp = purplePG[2]
+    case temp
+    when GeoPolygon
+      #polygon code
+      #redPG=GeoPolygon.new(redPG)
+      #purplepolygon = Geopolygon.new(purplePG[2].@array_of_geo.clone)
+      arr<<temp
+    end
+
+    return arr
   end
 
   def display

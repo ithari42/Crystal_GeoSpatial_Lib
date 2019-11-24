@@ -163,11 +163,12 @@
 	end
 
 	def intersects(l : GeoPolyline, g : GeoPolygon)
-		d=l.@array_of_geo.clone
+		d=g.@array_of_geo.clone
+		
 		n=d.size
 		x=0
 		while x<n 
-			if intersects(d[x],g)
+			if same_line_side(d[x],l)
 				return true
 			end
 			x+=1
@@ -181,6 +182,16 @@
 		x=0
 		while x<n 
 			if intersects(d[x],g2)
+				return true
+			end
+			x+=1
+		end
+		#inverse
+		d=g2.@array_of_geo.clone
+		n=d.size
+		x=0
+		while x<n 
+			if intersects(d[x],g1)
 				return true
 			end
 			x+=1
@@ -384,6 +395,38 @@
 		else
 			false
 		end
+	end
+
+	def same_line_side(p : GeoPoint, sl : GeoPolyline)
+		flag=false
+		line=sl.@array_of_geo.clone
+
+		subline=get_subline(line,0)
+		flag=on_left_gc(p, subline)
+
+		#puts ["flag",flag]
+		if line.size<4 #the polygon doesn't even have 3 nodes
+			return false
+		end
+
+		x=1
+		n=line.size
+		
+		while x<n-1 
+			subline=get_subline(line,x)
+			#puts ["subline", subline]
+			s=subline_to_GeoPoint(subline)
+
+			fp1=[s[0].@lat, s[0].@lon]
+			fp2=[s[1].@lat, s[1].@lon]
+			fp1=GeoPoint.new(fp1[0], fp1[1], 1.0)
+			fp2=GeoPoint.new(fp2[0], fp2[1], 1.0)
+			if on_left_gc(p, subline)!=flag
+				return false
+			end
+			x+=1
+		end
+		true
 	end
 
 	#return distance from surface<p1,p2,[0,0,0]> to r
