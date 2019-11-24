@@ -163,11 +163,29 @@
 	end
 
 	def intersects(l : GeoPolyline, g : GeoPolygon)
-		
+		d=l.@array_of_geo.clone
+		n=d.size
+		x=0
+		while x<n 
+			if intersects(d[x],g)
+				return true
+			end
+			x+=1
+		end
+		return false
 	end
 
 	def intersects(g1 : GeoPolygon, g2 : GeoPolygon)
-		
+		d=g1.@array_of_geo.clone
+		n=d.size
+		x=0
+		while x<n 
+			if intersects(d[x],g2)
+				return true
+			end
+			x+=1
+		end
+		return false
 	end
 
 	
