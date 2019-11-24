@@ -65,11 +65,11 @@ class Tester
     p_test2=GeoPoint.new(38.9, 120, 1.0)
     
     util=GeoUtilities2D.new
-    puts ["g1",g1]
+    #
     ans1=util.intersects(p_test1, g1)
-    puts ["g1",g1]
+    #puts ["g1",g1]
     ans2=util.intersects(p_test2, g1)
-    puts ["g1",g1]
+    #puts ["g1",g1]
 
     if ans1==true && ans2==false
       return true

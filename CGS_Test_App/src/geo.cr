@@ -134,9 +134,17 @@
 		line=graph.@array_of_geo.clone
 
 		line<<line[0]
-		x=0
+		subline=get_subline(line,0)
+		flag=on_left_gc(p, subline)
+
+		#puts ["flag",flag]
+		if line.size<4 #the polygon doesn't even have 3 nodes
+			return false
+		end
+
+		x=1
 		n=line.size
-		#puts ["n",n]
+		
 		while x<n-1 
 			subline=get_subline(line,x)
 			#puts ["subline", subline]
@@ -146,12 +154,12 @@
 			fp2=[s[1].@lat, s[1].@lon]
 			fp1=GeoPoint.new(fp1[0], fp1[1], 1.0)
 			fp2=GeoPoint.new(fp2[0], fp2[1], 1.0)
-			if on_subline(p, fp1 , fp2)
-				return true
+			if on_left_gc(p, subline)!=flag
+				return false
 			end
 			x+=1
 		end
-		false
+		true
 	end
 
 	def intersects(l : GeoPolyline, g : GeoPolygon)
