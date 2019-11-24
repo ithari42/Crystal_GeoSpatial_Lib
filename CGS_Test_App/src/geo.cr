@@ -113,9 +113,18 @@
 		n=line.size
 		while x<n-1 
 			subline=get_subline(l,x)
-			#if on_subline(p,subline) ...
+			s=subline_to_GeoPoint(subline)
+
+			fp1=s[0].coordinate2d
+			fp2=s[1].coordinate2d
+			fp1=GeoPoint.new(fp1[0], fp1[1], 1.0)
+			fp2=GeoPoint.new(fp2[0], fp2[1], 1.0)
+			if on_subline(p, fp1 , fp2)
+				return true
+			end
 			x+=1
 		end
+		false
 	end
 
 	def intersects(p : GeoPoint, g : GeoPolygon)
@@ -130,13 +139,22 @@
 		
 	end
 
+	
 	#utile functions
-	#Input: subline must be [[float64, float64],[float64, float64]]
-	def v_dotProduct(v1,v2)
+	
+#Math related
+	def v_dotProduct2d(v1,v2)
 		if v1.size>2||v2.size>2
 			"dot product error"
 		end
 		return (v1[0]*v2[1]-v1[2]*v2[1])
+	end
+
+	def v_dotProduct3d(v1,v2)
+		if v1.size>2||v2.size>2
+			"dot product error"
+		end
+		return (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
 	end
 
 	def xyz_crossProduct(v1,v2)
@@ -151,9 +169,15 @@
 		return [b*f-c*e, c*d-a*f, a*e-d*b]
 	end
 
-		#return [[lat1,lon1],[lat2,lon2]]
-		#ith subline (i,i+1), i starts with 0
-		#i must be i<size-1
+	def in_a_line3d(p1, p2, p3)
+		#to do judge here
+		false
+	end
+
+#GIS coordinate related
+	#return [[lat1,lon1],[lat2,lon2]]
+	#ith subline (i,i+1), i starts with 0
+	#i must be i<size-1
 	def get_subline(l : GeoPolyline, i )
 		#if i>=l.size||j>=l.size
 		#	"get_subline out of range"
@@ -162,6 +186,13 @@
 		return [[d[i].lat,d[i].lon],[d[i+1].lat,d[i+1].lon]]
 	end
 
+	def subline_to_GeoPoint(subline)
+		v0=subline[0]
+		v1=subline[1]
+		p1=GeoPoint.new(v0[0], v0[1], 1.0)
+		p2=GeoPoint.new(v1[0], v1[1], 1.0)
+		[p1,p2]
+	end
 	#return central angle in degree
 	def get_ca(p1 : GeoPoint, p2 : GeoPoint)
 		pi=3.14159265358979323846
@@ -192,15 +223,62 @@
 
 	end
 
-	def on_subline(p : GeoPoint, s)
-		point=p.coordinate2d
+	#return if r on great circle p, q, in the sense of 0.00001 earth radius
+	#p q must not construct a rear position
+	def on_subline(r : GeoPoint, p : GeoPoint, q : GeoPoint)
+		if in_a_line3d(r, p, q)
+			puts "error determining the great circle in on_subline()"
+		end
+		
+		rr=@R_Earth
+		d=dist_p_CenterSurface(r,p,q)
+		if d<0
+			d=-d
+		end
+
+		if d < rr*0.00001
+			true
+		else
+			false
+		end
+
 	end
 
 	def enum_polygon(l : GeoPolyline) # return a tuple containing each vector on a polygon
 		
 	end
 
+#coordinate transfer related
+	#return transferred latitude longtitude coordinate, in degree
+	def ll_to_tll(p : GeoPoint)
+		t=p.coordinate3d
+		lat=t[0]
+		lon=t[1]
+		if 	lon >0
+			lon=360-lon
+		else
+			lon=-lon
+		end
+
+		pn=GeoPoint.new(lat,lon,t[2])
+		return pn
+	end
+
+	def ll_to_tll(subline)
+		lat=subline[0]
+		lon=subline[1]
+		if 	lon >0
+			lon=360-lon
+		else
+			lon=-lon
+		end
+
+		return [lat,lon]
+	end
+
 	def ll_to_xyz(p : GeoPoint)
+		p=ll_to_tll(p)
+
 		data=p.coordinate2d
 		phi=data[0]
 		lam=data[1]
@@ -213,9 +291,11 @@
 	end
 
 	def ll_to_xyz(subline)
-		
-		phi=subline[0]
-		lam=subline[1]
+		subline=ll_to_tll(subline)
+
+		pi=3.14159265358979323846
+		phi=subline[0]*pi/180
+		lam=subline[1]*pi/180
 		r=@R_Earth
 		x=r*GeoUtilities2D.sin(phi)*GeoUtilities2D.cos(lam)
 		y=r*GeoUtilities2D.sin(phi)*GeoUtilities2D.sin(lam)
@@ -235,18 +315,44 @@
 		q=ll_to_xyz(q)
 		r=ll_to_xyz(r)
 
+		#puts ["p q r",p,q,r]
 		c=[0,0,0]
 		vecn=xyz_NormalVector(p ,q, c)
 		
-
 		pr=xyz_vector(p,r)
-		if v_dotProduct(vecn,pr)>0
+
+		vecn=xyz_vec_std(vecn)
+		pr=xyz_vec_std(pr)
+		#puts ["vecn",vecn,pr]
+		if v_dotProduct3d(vecn,pr)>0
 			true 
 		else
 			false
 		end
 	end
 
+	#return distance from surface<p1,p2,[0,0,0]> to r
+	def dist_p_CenterSurface(r : GeoPoint, p1 : GeoPoint, p2 : GeoPoint)
+		p1=p1.coordinate2d
+		p2=p2.coordinate2d
+		#p3=p3.coordinate2d
+
+		p1=ll_to_xyz(p1)
+		p2=ll_to_xyz(p2)
+		p3=[0, 0, 0]
+
+		vn=xyz_NormalVector(p1,p2,p3)
+		vn=xyz_vec_std(vn)
+
+		r=r.coordinate2d
+		r=ll_to_xyz(r)
+
+		vr=xyz_vector(r,p1)
+		v_dotProduct3d(vr,vn)
+		#puts ["vecn",vecn,"vr", vr]
+	end
+
+	#make a vector from two sublines, p3 to p1
 	def xyz_vector(p1,p3)
 		v1=[
 			p1[0]-p3[0],
@@ -255,6 +361,14 @@
 		]
 	end
 
+	#vecn=[x,y,z], return vector size = 1
+	def xyz_vec_std(vecn)
+		m_vecn=vecn[0]*vecn[0]+vecn[1]*vecn[1]+vecn[1]*vecn[1]
+		m_vecn=GeoUtilities2D.sqrt(m_vecn)
+		return [vecn[0]/m_vecn,vecn[1]/m_vecn,vecn[2]/m_vecn]
+	end
+
+	#p=[x,y,z]
 	def xyz_NormalVector(p1,p2,p3)
 		v1=[
 			p1[0]-p3[0],
@@ -276,7 +390,7 @@
 	l1=GeoPolyline.new([p1,p2])
 
 
-	p3=GeoPoint.new(30,90,1.0)
+	p3=GeoPoint.new(30,74,1.0)
 	util=GeoUtilities2D.new
 	sl=util.get_subline(l1,0)
 	puts util.on_left_gc(p3,sl)
