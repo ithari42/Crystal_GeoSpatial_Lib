@@ -20,6 +20,7 @@
 	def coordinate3d
 		[@lat,@lon,@alt]
 	end
+	def_clone
 	end
 
 	class GeoPolyline
@@ -59,7 +60,7 @@
 			end
 			return x
 		end
-		
+		def_clone
 	end
 
 	class GeoPolygon
@@ -83,6 +84,8 @@
 
 		def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
 		end
+
+		def_clone
 	end
 
 	class GeoUtilities2D
@@ -107,7 +110,7 @@
 
 	def intersects(p : GeoPoint, l : GeoPolyline)
 		flag=false
-		line=l.@array_of_geo
+		line=l.@array_of_geo.clone
 		x=0
 		n=line.size
 		while x<n-1 
@@ -128,7 +131,7 @@
 
 	def intersects(p : GeoPoint, graph : GeoPolygon)
 		flag=false
-		line=graph.@array_of_geo
+		line=graph.@array_of_geo.clone
 
 		line<<line[0]
 		x=0
@@ -202,7 +205,7 @@
 		#if i>=l.size||j>=l.size
 		#	"get_subline out of range"
 		#end
-		d=l.@array_of_geo
+		d=l.@array_of_geo.clone
 		return [[d[i].lat,d[i].lon],[d[i+1].lat,d[i+1].lon]]
 	end
 
