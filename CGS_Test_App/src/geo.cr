@@ -29,9 +29,6 @@
 			
 		end
 
-		def data
-			@array_of_geo
-		end
 
 		def toPolygon #return a polygon formed by connecting head and rear GeoPoint
 			return GeoPolygon.new(@points)
@@ -66,7 +63,9 @@
 	end
 
 	class GeoPolygon
-		def initialize(@points)
+		def initialize(points)
+			@array_of_geo= [] of GeoPoint
+			@array_of_geo=points
 		end
 
 		def contains
@@ -108,15 +107,15 @@
 
 	def intersects(p : GeoPoint, l : GeoPolyline)
 		flag=false
-		line=l.data
+		line=l.@array_of_geo
 		x=0
 		n=line.size
 		while x<n-1 
 			subline=get_subline(l,x)
 			s=subline_to_GeoPoint(subline)
 
-			fp1=s[0].coordinate2d
-			fp2=s[1].coordinate2d
+			fp1=[s[0].@lat, s[0].@lon]
+			fp2=[s[1].@lat, s[1].@lon]
 			fp1=GeoPoint.new(fp1[0], fp1[1], 1.0)
 			fp2=GeoPoint.new(fp2[0], fp2[1], 1.0)
 			if on_subline(p, fp1 , fp2)
@@ -127,8 +126,29 @@
 		false
 	end
 
-	def intersects(p : GeoPoint, g : GeoPolygon)
-		
+	def intersects(p : GeoPoint, graph : GeoPolygon)
+		flag=false
+		line=graph.@array_of_geo
+
+		line<<line[0]
+		x=0
+		n=line.size
+		#puts ["n",n]
+		while x<n-1 
+			subline=get_subline(line,x)
+			#puts ["subline", subline]
+			s=subline_to_GeoPoint(subline)
+
+			fp1=[s[0].@lat, s[0].@lon]
+			fp2=[s[1].@lat, s[1].@lon]
+			fp1=GeoPoint.new(fp1[0], fp1[1], 1.0)
+			fp2=GeoPoint.new(fp2[0], fp2[1], 1.0)
+			if on_subline(p, fp1 , fp2)
+				return true
+			end
+			x+=1
+		end
+		false
 	end
 
 	def intersects(l : GeoPolyline, g : GeoPolygon)
@@ -182,8 +202,14 @@
 		#if i>=l.size||j>=l.size
 		#	"get_subline out of range"
 		#end
-		d=l.data
+		d=l.@array_of_geo
 		return [[d[i].lat,d[i].lon],[d[i+1].lat,d[i+1].lon]]
+	end
+
+	def get_subline(line , i )
+		d1=[line[i].@lat, line[i].@lon]
+		d2=[line[i+1].@lat, line[i+1].@lon]
+		return [[d1[0],d1[1]],[d2[0],d2[1]]]
 	end
 
 	def subline_to_GeoPoint(subline)
@@ -196,8 +222,8 @@
 	#return central angle in degree
 	def get_ca(p1 : GeoPoint, p2 : GeoPoint)
 		pi=3.14159265358979323846
-		p1_2d=p1.coordinate2d
-		p2_2d=p2.coordinate2d
+		p1_2d=[p1.@lat, p1.@lon]
+		p2_2d=[p2.@lat, p2.@lon]
 
 		phi1=p1_2d[0]*pi/180
 		lam1=p1_2d[1]*pi/180
@@ -251,7 +277,7 @@
 #coordinate transfer related
 	#return transferred latitude longtitude coordinate, in degree
 	def ll_to_tll(p : GeoPoint)
-		t=p.coordinate3d
+		t=[p.@lat, p.@lon, p.@alt]
 		lat=t[0]
 		lon=t[1]
 		if 	lon >0
@@ -279,9 +305,9 @@
 	def ll_to_xyz(p : GeoPoint)
 		p=ll_to_tll(p)
 
-		data=p.coordinate2d
-		phi=data[0]
-		lam=data[1]
+		dd=[p.@lat, p.@lon]
+		phi=dd[0]
+		lam=dd[1]
 		r=@R_Earth
 		x=r*GeoUtilities2D.sin(phi)*GeoUtilities2D.cos(lam)
 		y=r*eoUtilities2D.sin(phi)*GeoUtilities2D.sin(lam)
@@ -309,7 +335,7 @@
 	def on_left_gc(r : GeoPoint, subline)
 		p=subline[0]
 		q=subline[1]
-		r=r.coordinate2d
+		r=[r.@lat, r.@lon]
 
 		p=ll_to_xyz(p)
 		q=ll_to_xyz(q)
@@ -333,9 +359,9 @@
 
 	#return distance from surface<p1,p2,[0,0,0]> to r
 	def dist_p_CenterSurface(r : GeoPoint, p1 : GeoPoint, p2 : GeoPoint)
-		p1=p1.coordinate2d
-		p2=p2.coordinate2d
-		#p3=p3.coordinate2d
+		p1=[p1.@lat, p1.@lon]
+		p2=[p2.@lat, p2.@lon]
+		
 
 		p1=ll_to_xyz(p1)
 		p2=ll_to_xyz(p2)
@@ -344,7 +370,7 @@
 		vn=xyz_NormalVector(p1,p2,p3)
 		vn=xyz_vec_std(vn)
 
-		r=r.coordinate2d
+		r=[r.@lat, r.@lon]
 		r=ll_to_xyz(r)
 
 		vr=xyz_vector(r,p1)
@@ -393,5 +419,4 @@
 	p3=GeoPoint.new(30,74,1.0)
 	util=GeoUtilities2D.new
 	sl=util.get_subline(l1,0)
-	puts util.on_left_gc(p3,sl)
-
+	#puts util.on_left_gc(p3,sl)

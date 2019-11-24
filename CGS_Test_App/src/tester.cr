@@ -18,6 +18,11 @@ class Tester
       return 2
     end
 
+    if(pg_intersects!=true)
+      puts ["Crystal_GIS_Library Auto Test completed : fail", 3]
+      return 3
+    end
+
     puts ["Crystal_GIS_Library Auto Test completed : success"]
     return 0
   end
@@ -47,6 +52,32 @@ class Tester
 
   def ll_intersects
     true
+  end
+
+  def pg_intersects
+    p1=GeoPoint.new(18.9, 77.0, 1.0) # 73.1 N, 77.0 S, 1.0m 
+    p2=GeoPoint.new(38.9, 107.0, 1.0)
+    p3=GeoPoint.new(58.9, 77.0, 1.0)
+
+    g1=GeoPolygon.new([p1, p2, p3])
+
+    p_test1=GeoPoint.new(38.9, 90, 1.0)
+    p_test2=GeoPoint.new(38.9, 120, 1.0)
+    
+    util=GeoUtilities2D.new
+    puts ["g1",g1]
+    ans1=util.intersects(p_test1, g1)
+    puts ["g1",g1]
+    ans2=util.intersects(p_test2, g1)
+    puts ["g1",g1]
+
+    if ans1==true && ans2==false
+      return true
+    end
+
+    puts ["---point polygon intersection judge fail---"]
+    puts [ans1, ans2]
+    return false
   end
 
   #read Xml to get a list of points
