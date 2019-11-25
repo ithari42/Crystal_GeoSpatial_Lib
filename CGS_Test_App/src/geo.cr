@@ -1,4 +1,4 @@
-	class GeoPoint
+class GeoPoint
 	def initialize(lat : Float64, lon : Float64, alt : Float64)
 			@lat=lat
 			@lon=lon
@@ -23,72 +23,75 @@
 	def_clone
 	end
 
-	class GeoPolyline
-		def initialize(points)#Need a tuple of GeoPoint
-			@array_of_geo =[] of GeoPoint
-			@array_of_geo= points
-			
-		end
-
-
-		def toPolygon #return a polygon formed by connecting head and rear GeoPoint
-			return GeoPolygon.new(@points)
-		end
-	
-		def allNorth # returns true if all of the points are in the northeren hemisphere, false otherwise
-			x=0
-			flag=true
-			while x < @array_of_geo.size && flag ==true
-				if @array_of_geo[x].@lat < 0        
-						#puts "some of your your points are south "
-						flag=false
-				end
-				x=x+1
-			end	
-			return x	
-		end
+class GeoPolyline
+	def initialize(points)#Need a tuple of GeoPoint
+		@array_of_geo =[] of GeoPoint
+		@array_of_geo= points
 		
-		def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
-			x=0
-			flag=true
-			while x < @array_of_geo.size && flag==true
-				if @array_of_geo[x].@lat         
-					puts "some of your points are north "
+	end
+
+
+	def toPolygon #return a polygon formed by connecting head and rear GeoPoint
+		return GeoPolygon.new(@points)
+	end
+
+	def allNorth # returns true if all of the points are in the northeren hemisphere, false otherwise
+		x=0
+		flag=true
+		while x < @array_of_geo.size && flag ==true
+			if @array_of_geo[x].@lat < 0        
+					#puts "some of your your points are south "
 					flag=false
-				end
-				x=x+1
 			end
-			return x
-		end
-		def_clone
+			x=x+1
+		end	
+		return x	
 	end
-
-	class GeoPolygon
-		def initialize(points)
-			@array_of_geo= [] of GeoPoint
-			@array_of_geo=points
-		end
-
-		def contains
-		end
-
-		def toPolyline
-			return GeoLine.new(@points)
-		end
-
-		def isConvex
-		end
 		
-		def allNorth # returns true if all of the points are in the northeren hemisphere, false otherwise
+	def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
+		x=0
+		flag=true
+		while x < @array_of_geo.size && flag==true
+			if @array_of_geo[x].@lat         
+				puts "some of your points are north "
+				flag=false
+			end
+			x=x+1
 		end
-
-		def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
-		end
-
-		def_clone
+		return x
 	end
 
-	class GeoUtilities2D
+	###
+	def_clone
+
+end
+
+class GeoPolygon
+	def initialize(points)
+		@array_of_geo= [] of GeoPoint
+		@array_of_geo=points
+	end
+
+	def contains
+	end
+
+	def toPolyline
+		return GeoLine.new(@points)
+	end
+
+	def isConvex
+	end
+	
+	def allNorth # returns true if all of the points are in the northeren hemisphere, false otherwise
+	end
+
+	def allSouth # returns true if all of the points are in the southern hemisphere, false otherwise
+	end
+
+	def_clone
+end
+
+class GeoUtilities2D
 		#sin, cos in Math use rads
 		extend Math
 
@@ -163,17 +166,27 @@
 	end
 
 	def intersects(l : GeoPolyline, g : GeoPolygon)
-		d=g.@array_of_geo.clone
+		ldata=l.@array_of_geo.clone
+		subline=get_subline(ldata,0)
+
+		gdata=g.@array_of_geo.clone
+		flag=on_left_gc(gdata[0], subline)
+
+		gdata=g.@array_of_geo.clone
 		
-		n=d.size
-		x=0
+		n=gdata.size
+		x=1
 		while x<n 
-			if same_line_side(d[x],l)
-				return true
+			if same_line_side(gdata[x],l,flag)!=true
+				return false
 			end
 			x+=1
 		end
-		return false
+
+		#if flag1==true && flag2==true
+		#	return true
+		#end
+		return true
 	end
 
 	def intersects(g1 : GeoPolygon, g2 : GeoPolygon)
@@ -199,10 +212,10 @@
 		return false
 	end
 
-	
+
 	#utile functions
-	
-#Math related
+
+	#Math related
 	def v_dotProduct2d(v1,v2)
 		if v1.size>2||v2.size>2
 			"dot product error"
@@ -234,7 +247,7 @@
 		false
 	end
 
-#GIS coordinate related
+	#GIS coordinate related
 	#return [[lat1,lon1],[lat2,lon2]]
 	#ith subline (i,i+1), i starts with 0
 	#i must be i<size-1
@@ -289,6 +302,25 @@
 
 	end
 
+	#return bearing from p1 to p2
+	def bearing_angle(p1 : GeoPoint, p2 : GeoPoint)
+		pd1=p1.@array_of_geo.clone
+		pd2=p2.@array_of_geo.clone
+
+		lam1=pd1[1]
+		lam2=pd2[1]
+		phi1=pd1[0]
+		phi2=pd2[0]
+		dlam=lam1-lam2
+
+		theta1=GeoUtilities2D.sin(dlam)*GeoUtilities2D.cos(phi2)
+		theta2=GeoUtilities2D.cos(phi1)*GeoUtilities2D.sin(phi2)
+		theta2+=-GeoUtilities2D.sin(phi1)*GeoUtilities2D.cos(phi2)*GeoUtilities2D.cos(dlam)
+
+		ans=theta1+theta2
+		ans=GeoUtilities2D.atan2(ans)
+	end
+
 	#return if r on great circle p, q, in the sense of 0.00001 earth radius
 	#p q must not construct a rear position
 	def on_subline(r : GeoPoint, p : GeoPoint, q : GeoPoint)
@@ -314,7 +346,7 @@
 		
 	end
 
-#coordinate transfer related
+	#coordinate transfer related
 	#return transferred latitude longtitude coordinate, in degree
 	def ll_to_tll(p : GeoPoint)
 		t=[p.@lat, p.@lon, p.@alt]
@@ -370,7 +402,7 @@
 		return [x,y,z]
 	end
 
-	#return if a geopoint is on the left of a subline in GreatCircle manner
+	#return if a Geopoint is on the left of a subline in GreatCircle manner
 	#subline [[lat1,lon1],[lat2,lon2]]
 	def on_left_gc(r : GeoPoint, subline)
 		p=subline[0]
@@ -397,19 +429,9 @@
 		end
 	end
 
-	def same_line_side(p : GeoPoint, sl : GeoPolyline)
-		flag=false
+	def same_line_side(p : GeoPoint, sl : GeoPolyline, flag)
+		x=0
 		line=sl.@array_of_geo.clone
-
-		subline=get_subline(line,0)
-		flag=on_left_gc(p, subline)
-
-		#puts ["flag",flag]
-		if line.size<4 #the polygon doesn't even have 3 nodes
-			return false
-		end
-
-		x=1
 		n=line.size
 		
 		while x<n-1 
@@ -480,7 +502,7 @@
 		]
 		return xyz_crossProduct(v1,v2)
 	end
-	end
+end
 
 
 	p1=GeoPoint.new(38.9, 77.0, 1.0) # 73.1 N, 77.0 S, 1.0m 

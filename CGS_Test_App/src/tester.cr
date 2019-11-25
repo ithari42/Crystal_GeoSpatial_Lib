@@ -24,6 +24,11 @@ class Tester
       return 3
     end
 
+    if(lg_intersects!=true)
+      puts ["Crystal_GIS_Library Auto Test completed : fail", 4]
+      return 4
+    end
+
     gg_intersects
 
     puts ["Crystal_GIS_Library Auto Test completed : success"]
@@ -74,6 +79,7 @@ class Tester
     ans2=util.intersects(p_test2, g1)
     #puts ["g1",g1]
 
+
     if ans1==true && ans2==false
       return true
     end
@@ -83,43 +89,68 @@ class Tester
     return false
   end
 
-  def gg_intersects
-    t=read()
-    puts typeof(t)
+  def lg_intersects
+    l=readl("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/GoldPolyline.kml")
+    g=readg("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/RedPolygon.kml")
+
     util=GeoUtilities2D.new
-    t=util.intersects(t[0],t[1])
-    puts t
+    t=util.intersects(l,g)
+    
+    if t==true
+      return true
+    end
+    false
   end
+
+  def gg_intersects
+    g1=readg("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/RedPolygon.kml")
+    g2=readg("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/PurplePolygon.kml")
+
+    util=GeoUtilities2D.new
+    t=util.intersects(g1,g2)
+    
+    if t==true
+      return true
+    end
+    false
+  end
+
   #read Xml to get a list of points
-  def read()
+  def readg(path)
     arr=[] of GeoPolygon
-    redPG=parseKML("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/RedPolygon.kml")
-    temp = redPG[2]
-
+    
+    res=parseKML(path)
+    temp = res[2]
     case temp
     when GeoPolygon
-      #polygon code
-      #redPG=GeoPolygon.new(redPG)
-      #redpolygon = Geopolygon.new(redPG[2].@array_of_geo.clone)
-      #puts typeof(temp)
       arr<<temp
+      
     end
 
-  
+    return arr[0]
+  end
 
-    #puts redPG
-
-    purplePG=parseKML("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/PurplePolygon.kml")
-    temp = purplePG[2]
-    case temp
-    when GeoPolygon
-      #polygon code
-      #redPG=GeoPolygon.new(redPG)
-      #purplepolygon = Geopolygon.new(purplePG[2].@array_of_geo.clone)
-      arr<<temp
+  def readl(path)
+    arr1=[] of GeoPolyline
+    res1=parseKML(path)
+    temp1 = res1[2]
+    case temp1
+    when GeoPolyline
+      arr1<<temp1    
     end
+    return arr1[0]
+  end
 
-    return arr
+  def readp(path )
+    arr2=[] of GeoPoint
+    res2=parseKML(path)
+    temp2 = res2[2]
+    case temp2
+    when GeoPoint
+      arr2<<temp2
+      return arr2[0]
+    end
+    return Geopoint.new(0,0,0)
   end
 
   def display
