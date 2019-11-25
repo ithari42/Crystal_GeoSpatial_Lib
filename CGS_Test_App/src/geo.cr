@@ -3,6 +3,7 @@ class GeoPoint
 			@lat=lat
 			@lon=lon
 			@alt=alt
+			@array_of_geo=[@lat,@lon,@alt]
 	end
 
 	def lat
@@ -165,6 +166,63 @@ class GeoUtilities2D
 		true
 	end
 
+	def intersects(l1 : GeoPolyline, l2 : GeoPolyline)
+		line1=l1.@array_of_geo.clone
+		line2=l2.@array_of_geo.clone
+		n1=line1.size
+		n2=line2.size
+		i=0
+		j=0
+		while i<n1-1
+			while j<n2-1
+				s1=get_subline(line1, i)
+				s2=get_subline(line2, j)
+				if intersects(s1,s2)
+					return true
+				end
+				j+=1
+			end
+			i+=1
+			j=0
+		end
+		return false
+	end
+
+	def intersects(subline1, subline2)
+		pi=3.14159265358979323846
+
+		ap1=subline1[0]
+		ap2=subline1[1]
+		ap3=subline2[0]
+		ap4=subline2[1]
+
+
+		p1=GeoPoint.new(ap1[0],ap1[1], 1)
+		q1=GeoPoint.new(ap2[0], ap2[1], 1)
+		p2=GeoPoint.new(ap3[0], ap3[1], 1)
+		q2=GeoPoint.new(ap4[0], ap4[1], 1)
+
+		b1=bearing_angle(p1, q1)
+		b2=bearing_angle(p2, q2)
+
+		puts ["b", b1, b2]
+		#l1=subline_to_GeoPolyline(subline1)
+		#l2=subline_to_GeoPolyline(subline2)
+		lam, phi=two_line_intersection(p1, b1, p2, b2)
+		p3=GeoPoint.new(phi, lam, 1)
+
+		puts [phi, lam]
+		
+		angle1=get_ca(p1, q1)
+		angle2=get_ca(p1, p3)
+
+		puts ["angle",angle1, angle2]
+		if(angle1>=angle2)
+			return true
+		end
+		return false
+	end
+
 	def intersects(l : GeoPolyline, g : GeoPolygon)
 		ldata=l.@array_of_geo.clone
 		subline=get_subline(ldata,0)
@@ -272,6 +330,10 @@ class GeoUtilities2D
 		p2=GeoPoint.new(v1[0], v1[1], 1.0)
 		[p1,p2]
 	end
+
+	def subline_to_GeoPolyline(subline)		
+		l=GeoPolyline.new(subline_to_GeoPoint(subline))
+	end
 	#return central angle in degree
 	def get_ca(p1 : GeoPoint, p2 : GeoPoint)
 		pi=3.14159265358979323846
@@ -298,27 +360,93 @@ class GeoUtilities2D
 		
 		ca*=2
 
+		ca=ca%360
+
 		return ca
 
 	end
 
 	#return bearing from p1 to p2
 	def bearing_angle(p1 : GeoPoint, p2 : GeoPoint)
+		pi=3.14159265358979323846
 		pd1=p1.@array_of_geo.clone
 		pd2=p2.@array_of_geo.clone
 
-		lam1=pd1[1]
-		lam2=pd2[1]
-		phi1=pd1[0]
-		phi2=pd2[0]
-		dlam=lam1-lam2
+		lam1=pd1[1]*pi/180
+		lam2=pd2[1]*pi/180
+		phi1=pd1[0]*pi/180
+		phi2=pd2[0]*pi/180
+		dlam=lam2-lam1
 
 		theta1=GeoUtilities2D.sin(dlam)*GeoUtilities2D.cos(phi2)
 		theta2=GeoUtilities2D.cos(phi1)*GeoUtilities2D.sin(phi2)
-		theta2+=-GeoUtilities2D.sin(phi1)*GeoUtilities2D.cos(phi2)*GeoUtilities2D.cos(dlam)
+		theta2=theta2-GeoUtilities2D.sin(phi1)*GeoUtilities2D.cos(phi2)*GeoUtilities2D.cos(dlam)
 
-		ans=theta1+theta2
-		ans=GeoUtilities2D.atan2(ans)
+		
+		ans=GeoUtilities2D.atan2(theta1,theta2)
+		ans=ans*180/pi
+	end
+
+	#return intersection point given two path
+	#b1 b2 are in degree
+	def two_line_intersection(p1 : GeoPoint, b1, p2 : GeoPoint, b2)
+		pi=3.14159265358979323846
+
+		theta13=b1*pi/180
+		theta23=b2*pi/180
+
+		pd1=p1.@array_of_geo.clone
+		pd2=p2.@array_of_geo.clone
+		lam1=pd1[1]*pi/180
+		lam2=pd2[1]*pi/180
+		phi1=pd1[0]*pi/180
+		phi2=pd2[0]*pi/180
+		dlam=lam1-lam2
+		dphi=phi1-phi2
+
+		delta12=GeoUtilities2D.sin(dphi/2)*GeoUtilities2D.sin(dphi/2)
+		delta12=delta12+GeoUtilities2D.cos(phi1)*GeoUtilities2D.cos(phi2)*GeoUtilities2D.sin(dlam/2)*GeoUtilities2D.sin(dlam/2)
+		delta12=2*GeoUtilities2D.asin(GeoUtilities2D.sqrt(delta12))
+
+		theta1=GeoUtilities2D.sin(phi2)-GeoUtilities2D.sin(phi1)*GeoUtilities2D.cos(delta12)
+		theta1=theta1/GeoUtilities2D.sin(delta12)/GeoUtilities2D.cos(phi1)
+		theta1=GeoUtilities2D.acos(theta1)
+
+		theta2=GeoUtilities2D.sin(phi1)-GeoUtilities2D.sin(phi2)*GeoUtilities2D.cos(delta12)
+		theta2=theta2/GeoUtilities2D.sin(delta12)/GeoUtilities2D.cos(phi2)
+		theta2=GeoUtilities2D.acos(theta2)
+
+		if GeoUtilities2D.sin(-dlam) > 0
+			theta12 = theta1
+			theta21 = 2*pi-theta2
+		else
+			theta12 = 2*pi-theta1
+			theta21 = theta2
+		end
+
+		alpha1=theta13-theta12
+		alpha2=theta21-theta23
+
+		alpha3=-GeoUtilities2D.cos(alpha1)*GeoUtilities2D.cos(alpha2)+GeoUtilities2D.sin(alpha1)*GeoUtilities2D.sin(alpha2)*GeoUtilities2D.cos(delta12)
+		alpha3=GeoUtilities2D.acos(alpha3)
+
+		delta13a=GeoUtilities2D.sin(delta12)*GeoUtilities2D.sin(alpha1)*GeoUtilities2D.sin(alpha2)
+		delta13b=GeoUtilities2D.cos(alpha2)+GeoUtilities2D.cos(alpha1)*GeoUtilities2D.cos(alpha3)
+		delta13=GeoUtilities2D.atan2(delta13a,delta13b)
+
+		phi3=GeoUtilities2D.sin(phi1)*GeoUtilities2D.cos(delta13)+GeoUtilities2D.cos(phi1)*GeoUtilities2D.sin(delta13)*GeoUtilities2D.cos(theta13)
+		phi3=GeoUtilities2D.asin(phi3)
+
+		dlam13a=GeoUtilities2D.sin(theta13)*GeoUtilities2D.sin(delta13)*GeoUtilities2D.cos(phi1)
+		dlam13b=GeoUtilities2D.cos(delta13)-GeoUtilities2D.sin(phi1)*GeoUtilities2D.sin(phi3)
+		dlam13=GeoUtilities2D.atan2(dlam13a,dlam13b)
+
+		lam3=lam1+dlam13
+
+		phi3=phi3*180/pi
+		lam3=lam3*180/pi
+		
+		return [phi3,lam3]
 	end
 
 	#return if r on great circle p, q, in the sense of 0.00001 earth radius
@@ -504,13 +632,19 @@ class GeoUtilities2D
 	end
 end
 
+util=GeoUtilities2D.new
+p1=GeoPoint.new(18.9, 77.0, 1.0) # 73.1 N, 77.0 S, 1.0m 
+p2=GeoPoint.new(39.0, 107.0, 1.0)
+p3=GeoPoint.new(39.0, 57.0, 1.0)
+p4=GeoPoint.new(58.9, 77.0, 1.0)
 
-	p1=GeoPoint.new(38.9, 77.0, 1.0) # 73.1 N, 77.0 S, 1.0m 
-	p2=GeoPoint.new(58.9, 77.0, 1.0)
-	l1=GeoPolyline.new([p1,p2])
+l1=GeoPolyline.new([p1,p4])
+l2=GeoPolyline.new([p2,p3])
 
+b1=util.bearing_angle(p1,p4)
+b2=util.bearing_angle(p2,p3)
 
-	p3=GeoPoint.new(30,74,1.0)
-	util=GeoUtilities2D.new
-	sl=util.get_subline(l1,0)
-	#puts util.on_left_gc(p3,sl)
+	
+k=util.two_line_intersection(p1 ,b1, p2, b2)
+puts ["k", k]
+

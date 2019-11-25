@@ -59,7 +59,21 @@ class Tester
   end
 
   def ll_intersects
-    true
+    p1=GeoPoint.new(18.9, 77.0, 1.0) # 73.1 N, 77.0 S, 1.0m 
+    p2=GeoPoint.new(39.0, 107.0, 1.0)
+    p3=GeoPoint.new(39.0, 57.0, 1.0)
+    p4=GeoPoint.new(58.9, 77.0, 1.0)
+
+    l1=GeoPolyline.new([p1,p4])
+    l2=GeoPolyline.new([p2,p3])
+
+    util=GeoUtilities2D.new
+    ans1=util.intersects(l1,l2)
+
+    if ans1==true
+      return true
+    end
+    false
   end
 
   def pg_intersects
@@ -156,3 +170,11 @@ class Tester
   def display
   end
 end
+
+tester=Tester.new
+tester.autoTest()
+#l1=tester.readl("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/1770line.kmz")
+#l1=l1.@array_of_geo.clone
+#util=GeoUtilities2D.new
+#d=util.distanceGC(l1[0],l1[1])
+#puts ["dis", d]
