@@ -57,20 +57,14 @@ def parseKML(filename : String)
                   end
                 end
               end
-              if child.name == "LookAt"
+              if child.name == "Point"
                 point = child
                 isPoint = true
                 point.children.select(&.element?).each do |child|
-                  if child.name == "longitude"
-                    lon_string = child.content
+                  if child.name == "coordinates"
+                    coordinate_string = child.content
                   end
-                  if child.name == "latitude"
-                    lat_string = child.content
-                  end
-                  if child.name == "altitude"
-                    alt_string = child.content
-                  end
-                end
+                end 
               end
             end
           end
@@ -103,7 +97,8 @@ def parseKML(filename : String)
     return {"polyline", shape_name, polyline}
     
   elsif isPoint
-    point = GeoPoint.new(lon_string.to_f,lat_string.to_f,alt_string.to_f)
+      arr = coordinate_string.split(",", remove_empty: true)
+      point = GeoPoint.new(arr[0].to_f,arr[1].to_f,arr[2].to_f)
     return {"point", shape_name, point}
     
   else

@@ -3,9 +3,11 @@ require "../src/geo"
 require "../src/tester"
 require "../src/kmlparser"
 
+ClrScrn = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 def polygonMenu(names)
   
+  puts ClrScrn
   puts "choose a polygon"
   val = 1
   names.each do |name|
@@ -20,6 +22,7 @@ end
 
 def polylineMenu(names)
   
+  puts ClrScrn
   puts "choose a polyline"
   val = 1
   names.each do |name|
@@ -34,6 +37,7 @@ end
 
 def pointMenu(names)
   
+  puts ClrScrn
   puts "choose a point"
   val = 1
   names.each do |name|
@@ -91,8 +95,24 @@ module CGSTestApp
     polylines << val2
     polylineNames << val[1]
   end
+  
+  val = parseKML("BlackPolyline.kml")
+  val2 = val[2]
+  case val2
+    when GeoPolyline
+    polylines << val2
+    polylineNames << val[1]
+  end
     
   val = parseKML("BluePoint.kml")
+  val2 = val[2]
+  case val2
+    when GeoPoint
+    points << val2
+    pointNames << val[1]
+  end
+  
+  val = parseKML("RedPoint.kml")
   val2 = val[2]
   case val2
     when GeoPoint
@@ -111,6 +131,8 @@ module CGSTestApp
   mainmenu += "5 - polyline contains point\n"
   mainmenu += "6 - euclidean distance\n"
   mainmenu += "7 - great circle distance\n"
+  
+  puts ClrScrn
   while(true)
     puts mainmenu
     
@@ -128,8 +150,19 @@ module CGSTestApp
         puts "\nINVALID CHOISE\n"
         next
       end
-      puts util.intersects(polygons[choise1],polygons[choise2])
+      result = util.intersects(polygons[choise1],polygons[choise2])
 
+      puts ClrScrn
+      outstring = polygonNames[choise1]
+      if result
+        outstring += " intersects "
+      else
+        outstring += " does not intersect "
+      end
+      
+      outstring += polygonNames[choise2] + "\n\n"
+      puts outstring
+      
       when 2
       choise1 = polygonMenu(polygonNames)-1
       if choise1 >= polygonNames.size
@@ -141,7 +174,19 @@ module CGSTestApp
         puts "\nINVALID CHOISE\n"
         next
       end
-      puts util.intersects(polylines[choise2],polygons[choise1])
+      result =  util.intersects(polylines[choise2],polygons[choise1])
+      
+      puts ClrScrn
+      outstring = polygonNames[choise1]
+      if result
+        outstring += " intersects "
+      else
+        outstring += " does not intersect "
+      end
+      
+      outstring += polylineNames[choise2] + "\n\n"
+      puts outstring
+      
       
       when 3
       choise1 = polylineMenu(polylineNames)-1
@@ -154,7 +199,19 @@ module CGSTestApp
         puts "\nINVALID CHOISE\n"
         next
       end
-      #puts util.intersects(polylines[choise2],polylines[choise1])
+      #result = util.intersects(polylines[choise2],polylines[choise1])
+      result = true
+      puts ClrScrn
+      outstring = polylineNames[choise1]
+      if result
+        outstring += " intersects "
+      else
+        outstring += " does not intersect "
+      end
+      
+      outstring += polylineNames[choise2] + "\n\n"
+      puts outstring
+      
       
       when 4
       choise1 = polygonMenu(polygonNames)-1
@@ -167,7 +224,19 @@ module CGSTestApp
         puts "\nINVALID CHOISE\n"
         next
       end
-      puts util.intersects(points[choise2],polygons[choise1])
+      result =  util.intersects(points[choise2],polygons[choise1])
+      
+      puts ClrScrn
+      outstring = polygonNames[choise1]
+      if result
+        outstring += " contains "
+      else
+        outstring += " does not contain "
+      end
+      
+      outstring += pointNames[choise2] + "\n\n"
+      puts outstring
+      
       
       when 5
       choise1 = polylineMenu(polylineNames)-1
@@ -180,7 +249,18 @@ module CGSTestApp
         puts "\nINVALID CHOISE\n"
         next
       end
-      puts util.intersects(points[choise2],polylines[choise1])
+      result =  util.intersects(points[choise2],polylines[choise1])
+      
+      puts ClrScrn
+      outstring = polylineNames[choise1]
+      if result
+        outstring += " contains "
+      else
+        outstring += " does not contain "
+      end
+      
+      outstring += pointNames[choise2] + "\n\n"
+      puts outstring
       
       when 6
       choise1 = pointMenu(pointNames)-1
@@ -194,7 +274,12 @@ module CGSTestApp
         next
       end
       
-      puts util.distanceEuclidean(points[choise2],points[choise1])
+      result = util.distanceEuclidean(points[choise2],points[choise1])
+      
+      puts ClrScrn
+      outstring = pointNames[choise1] + " is " + result.to_s + "km from " + pointNames[choise2] + "\n\n"
+      puts outstring
+      
       
       when 7
       choise1 = pointMenu(pointNames)-1
@@ -208,7 +293,11 @@ module CGSTestApp
         next
       end
       
-      puts util.distanceGC(points[choise2],points[choise1])
+      result = util.distanceGC(points[choise2],points[choise1])
+      
+      puts ClrScrn
+      outstring = pointNames[choise1] + " is " + result.to_s + "km from " + pointNames[choise2] + "\n\n"
+      puts outstring
     end
     
     #puts polygonMenu(polygonNames)

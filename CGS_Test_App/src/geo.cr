@@ -1,3 +1,5 @@
+PI = 3.14159265358979323846
+
 class GeoPoint
 	def initialize(lat : Float64, lon : Float64, alt : Float64)
 			@lat=lat
@@ -12,6 +14,10 @@ class GeoPoint
 	def lon
 		@lon
 	end
+  
+  def alt
+    @alt
+  end
 
 	def coordinate2d
 			[@lat,@lon]
@@ -100,14 +106,43 @@ class GeoUtilities2D
 		end
 
 		def distanceEuclidean(p1 : GeoPoint, p2 : GeoPoint)
-			ca=get_ca(p1,p2)
-			dis=ca*@R_Earth
+			#ca=get_ca(p1,p2)
+			#dis=ca*@R_Earth
+      
+      puts "" + p1.lon.to_s + "," + p1.lat.to_s
+      puts "" + p2.lon.to_s + "," + p2.lat.to_s
+      
+      x1 = (p1.alt + @R_Earth/2) * Math.cos(p1.lat * PI/180) * Math.sin(p1.lon * PI/190)
+      y1 = (p1.alt + @R_Earth/2) * Math.sin(p1.lat * PI/190)
+      z1 = (p1.alt + @R_Earth/2) * Math.cos(p1.lat * PI/180) * Math.cos(p1.lon * PI/190)
+      
+      x2 = (p2.alt + @R_Earth/2) * Math.cos(p2.lat * PI/180) * Math.sin(p2.lon * PI/190)
+      y2 = (p2.alt + @R_Earth/2) * Math.sin(p2.lat * PI/190)
+      z2 = (p2.alt + @R_Earth/2) * Math.cos(p2.lat * PI/180) * Math.cos(p2.lon * PI/190)
+      
+      dis = ((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)**(1/2)
+      
+      
 			return dis
 		end
 
 		def distanceGC(p1 : GeoPoint, p2 : GeoPoint)
-			dis=get_ca(p1,p2)/360
-			dis*=@R_Earth
+			#dis=get_ca(p1,p2)/360
+			#dis*=@R_Earth
+      
+      puts "" + p1.lon.to_s + "," + p1.lat.to_s
+      puts "" + p2.lon.to_s + "," + p2.lat.to_s
+      
+      lon1 = p1.lon * (PI/180) 
+      lon2 = p2.lon * (PI/180)
+      lat1 = p1.lat * (PI/180)
+      lat2 = p2.lat * (PI/180)
+			dlon = (lon2 - lon1)
+			dlat = (lat2 - lat1)
+      a = Math.sin(dlat/2)**2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon/2)**2
+      c = 2 * Math.atan2(a**(1/2), (1-a)**(1/2))
+      dis = c * @R_Earth
+
 			return dis
 		end
 
@@ -286,15 +321,15 @@ class GeoUtilities2D
 		dphi=phi1-phi2
 		dlam=lam1-lam2
 		
-		dlam_sin_2=GeoUtilities2D.sin(dlam/2)
+		dlam_sin_2=Math.sin(dlam/2)
 		
-		ca=GeoUtilities2D.sin(dphi/2)*GeoUtilities2D.sin(dphi/2)
+		ca=Math.sin(dphi/2)*Math.sin(dphi/2)
 
-		ca+=GeoUtilities2D.cos(phi1)*GeoUtilities2D.cos(phi2)*dlam_sin_2*dlam_sin_2
+		ca+=Math.cos(phi1)*Math.cos(phi2)*dlam_sin_2*dlam_sin_2
 		
-		ca=GeoUtilities2D.sqrt(ca)
+		ca=Math.sqrt(ca)
 		
-		ca=GeoUtilities2D.asin(ca)*180/pi
+		ca=Math.asin(ca)*180/pi
 		
 		ca*=2
 
