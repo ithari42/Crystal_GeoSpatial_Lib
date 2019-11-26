@@ -79,7 +79,7 @@ def parseKML(filename : String)
     pointList = [] of GeoPoint
     arr1.each do |string|
       arr = string.split(",", remove_empty: true)
-      point = GeoPoint.new(arr[0].to_f,arr[1].to_f,arr[2].to_f)
+      point = GeoPoint.new(arr[1].to_f,arr[0].to_f,arr[2].to_f)
       pointList << point
     end
     polygon = GeoPolygon.new(pointList)
@@ -90,7 +90,7 @@ def parseKML(filename : String)
     pointList = [] of GeoPoint
     arr1.each do |string|
       arr = string.split(",", remove_empty: true)
-      point = GeoPoint.new(arr[0].to_f,arr[1].to_f,arr[2].to_f)
+      point = GeoPoint.new(arr[1].to_f,arr[0].to_f,arr[2].to_f)
       pointList << point
     end
     polyline = GeoPolyline.new(pointList)
@@ -98,7 +98,7 @@ def parseKML(filename : String)
     
   elsif isPoint
       arr = coordinate_string.split(",", remove_empty: true)
-      point = GeoPoint.new(arr[0].to_f,arr[1].to_f,arr[2].to_f)
+      point = GeoPoint.new(arr[1].to_f,arr[0].to_f,arr[2].to_f)
     return {"point", shape_name, point}
     
   else

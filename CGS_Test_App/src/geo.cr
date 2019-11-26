@@ -107,12 +107,7 @@ class GeoUtilities2D
 		end
 
 		def distanceEuclidean(p1 : GeoPoint, p2 : GeoPoint)
-			#ca=get_ca(p1,p2)
-			#dis=ca*@R_Earth
-      
-      puts "" + p1.lon.to_s + "," + p1.lat.to_s
-      puts "" + p2.lon.to_s + "," + p2.lat.to_s
-      
+          
       x1 = (p1.alt + @R_Earth/2) * Math.cos(p1.lat * PI/180) * Math.sin(p1.lon * PI/190)
       y1 = (p1.alt + @R_Earth/2) * Math.sin(p1.lat * PI/190)
       z1 = (p1.alt + @R_Earth/2) * Math.cos(p1.lat * PI/180) * Math.cos(p1.lon * PI/190)
@@ -128,12 +123,6 @@ class GeoUtilities2D
 		end
 
 		def distanceGC(p1 : GeoPoint, p2 : GeoPoint)
-			#dis=get_ca(p1,p2)/360
-			#dis*=@R_Earth
-      
-      puts "" + p1.lon.to_s + "," + p1.lat.to_s
-      puts "" + p2.lon.to_s + "," + p2.lat.to_s
-      
       lon1 = p1.lon * (PI/180) 
       lon2 = p2.lon * (PI/180)
       lat1 = p1.lat * (PI/180)
@@ -388,24 +377,16 @@ class GeoUtilities2D
 		
 		dlam_sin_2=GeoUtilities2D.sin(dlam/2)
 		dphi_sin_2=GeoUtilities2D.sin(dphi/2)
-
-		dlam_sin_2=Math.sin(dlam/2)
-
 		
-		ca=Math.sin(dphi/2)*Math.sin(dphi/2)
+		ca=GeoUtilities2D.sin(dphi/2)*GeoUtilities2D.sin(dphi/2)
 
-		ca+=Math.cos(phi1)*Math.cos(phi2)*dlam_sin_2*dlam_sin_2
+		ca+=GeoUtilities2D.cos(phi1)*GeoUtilities2D.cos(phi2)*dlam_sin_2*dlam_sin_2
 		
 		ca=2*GeoUtilities2D.atan2(GeoUtilities2D.sqrt(ca),GeoUtilities2D.sqrt(1-ca)) 
 		
 		ca=GeoUtilities2D.asin(ca)*180/pi
 
 		ca=ca%360
-		ca=Math.sqrt(ca)
-		
-		ca=Math.asin(ca)*180/pi
-		
-		ca*=2
 
 		return ca
 
@@ -679,21 +660,3 @@ class GeoUtilities2D
 		return xyz_crossProduct(v1,v2)
 	end
 end
-
-util=GeoUtilities2D.new
-p1=GeoPoint.new(39.1, 94.6, 1.0) # 73.1 N, 77.0 S, 1.0m 
-p2=GeoPoint.new(29, 57.0, 1.0)
-p3=GeoPoint.new(29, 120.0, 1.0)
-p4=GeoPoint.new(18.6, 94.6, 1.0)
-
-l1=GeoPolyline.new([p1,p4])
-l2=GeoPolyline.new([p2,p3])
-
-b1=util.bearing_angle(p1,p4)
-b2=util.bearing_angle(p2,p3)
-
-#puts ["b",b1,b2]
-	
-#k=util.intersects(l1,l2)
-#puts ["k", k]
-

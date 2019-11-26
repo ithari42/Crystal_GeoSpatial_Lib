@@ -1,6 +1,6 @@
 # TODO: Write documentation for `CGSTestApp`
 require "../src/geo"
-require "../src/tester"
+#require "../src/tester"
 require "../src/kmlparser"
 
 ClrScrn = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
@@ -103,6 +103,14 @@ module CGSTestApp
     polylines << val2
     polylineNames << val[1]
   end
+  
+  val = parseKML("WhitePolyline.kml")
+  val2 = val[2]
+  case val2
+    when GeoPolyline
+    polylines << val2
+    polylineNames << val[1]
+  end
     
   val = parseKML("BluePoint.kml")
   val2 = val[2]
@@ -199,7 +207,7 @@ module CGSTestApp
         puts "\nINVALID CHOISE\n"
         next
       end
-      #result = util.intersects(polylines[choise2],polylines[choise1])
+      result = util.intersects(polylines[choise2],polylines[choise1])
       result = true
       puts ClrScrn
       outstring = polylineNames[choise1]
