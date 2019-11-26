@@ -104,15 +104,24 @@ class Tester
   end
 
   def lg_intersects
-    l=readl("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/GoldPolyline.kml")
-    g=readg("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/RedPolygon.kml")
+    #l=readl("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/bpolyline.kml")
+    #l2=readl("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/bpolyline2.kml")
+    l3=readl("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/apolyline.kml")
+    g=readg("/Users/xiaoxiaohui/Documents/program/crystal/Crystal_GeoSpatial_Lib/CGS_Test_App/src/bpolygon.kml")
+    puts ["ld",l3.@array_of_geo]
+    puts ["gd",g.@array_of_geo]
+    puts ["tester"]
+
 
     util=GeoUtilities2D.new
-    t=util.intersects(l,g)
+    #ans1=util.intersects(l,g)
+    #ans2=util.intersects(l2,g)
+    ans3=util.intersects(l3,g)
     
-    if t==true
-      return true
-    end
+    #puts [ans1,ans2,ans3]
+    #if ans1==true && ans2==true && ans3==false
+      #return true
+    #end
     false
   end
 
