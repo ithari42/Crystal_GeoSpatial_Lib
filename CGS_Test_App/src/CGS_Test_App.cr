@@ -133,10 +133,10 @@ module CGSTestApp
   
   mainmenu = "Choose a function\n"
   mainmenu += "1 - polygon x polygon intersection\n"
-  mainmenu += "2 - polygon x polyline intersection\n"
-  mainmenu += "3 - polyline x polyline intersection\n"
+#  mainmenu += "2 - polygon x polyline intersection\n"
+#  mainmenu += "3 - polyline x polyline intersection\n"
   mainmenu += "4 - polygon contains point\n"
-  mainmenu += "5 - polyline contains point\n"
+#  mainmenu += "5 - polyline contains point\n"
   mainmenu += "6 - euclidean distance\n"
   mainmenu += "7 - great circle distance\n"
   
